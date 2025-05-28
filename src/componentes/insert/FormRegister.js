@@ -1,64 +1,69 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-export default class FormRegister extends React.Component{
-	constructor(props){
-		super(props);
-		this.state = {
-			nome:'',
-			email: ''
-		};
-	}
-	
-	handleChange = (event) => {
-		// usar o nome do input para vincular ao estado
-		const { name, value} = event.target;
-		this.setState({ [name]: value});
-	};
-	
-	handleSubmit = async (event) => {
-	  event.preventDefault();
+const FormRegister = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    pass: ''
+  });
 
-	  const { nome, email } = this.state;
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
-	  const resposta = await fetch('http://localhost:5000/contatos', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ nome, email })
-	  });
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-	  const resultado = await resposta.json();
-	  alert('Mensagem enviada com sucesso!');
-	  this.setState({ nome: '', email: ''});
-   };
+    try {
+      const response = await fetch('http://localhost:5000/contatos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
+      if (!response.ok) throw new Error("Erro ao enviar os dados");
 
-  render() {
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <h2>Contatos</h2>
+      const result = await response.json();
+      alert('Utilizador registrado com sucesso!');
+      setFormData({ email: '', pass: '' });
+    } catch (error) {
+      console.error("Erro:", error);
+      alert('Erro ao registar utilizador.');
+    }
+  };
 
-        <div>
-          <label>Nome:</label><br />
-          <input
-            type="text"
-            name="nome"
-            value={this.state.nome}
-            onChange={this.handleChange}
-          />
-        </div>
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Registo</h2>
 
-        <div>
-          <label>Email:</label><br />
-          <input
-            type="email"
-            name="email"
-            value={this.state.email}
-            onChange={this.handleChange}
-          />
-        </div>
+      <div>
+        <label>Email:</label><br />
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-        <button type="submit">Enviar</button>
-      </form>
-    );
-  }
-}
+      <div>
+        <label>Pass:</label><br />
+        <input
+          type="password"
+          name="pass"
+          value={formData.pass}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      <button type="submit">Registar</button>
+    </form>
+  );
+};
+
+export default FormRegister;
