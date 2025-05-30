@@ -2,7 +2,7 @@ import React from 'react';
 
 import ReactDOM from 'react-dom/client';
 
-import Painel from './src/componentes/insert/FormRegister.js';
+import Painel from './src/componentes/jwt/FormLogin.js';
 
 const root = ReactDOM.createRoot(document.getElementById('aplicacao'));
 root.render(<Painel />);

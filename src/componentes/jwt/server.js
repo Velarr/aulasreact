@@ -1,44 +1,41 @@
+// server.js
 const express = require('express');
-const mysql = require('mysql2');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');// npm install jsonwebtoken
-
-/* JWT-> é um padrão de autenticação segura entre cliente */
-
+const jwt = require('jsonwebtoken');
+const { findAdminByEmailAndPass } = require('./database');
 
 const app = express();
-app.use(cors());//permite chamadas do react
+app.use(cors());
 app.use(express.json());
 
+const secretToken = 'tokensergio';
 
-// select á BD
-const userDb = [
-	{id:1, email:"sergio@sergio.pt", pass:"1212", nome:"Sérgio"}
-];
+app.post('/login', async (req, res) => {
+  const { email, pass } = req.body;
+  console.log(`Tentativa de login: ${email}`);
 
-const secretToken = 'tokensergio';// chave de assinatura
+  try {
+    const user = await findAdminByEmailAndPass(email, pass);
 
+    if (!user) {
+      console.log("Usuário ou senha inválida");
+      return res.status(401).json({ erro: 'Dados inválidos!' });
+    }
 
-app.post('/login',(req, res)=>{
-	const {email, pass}= req.body;
-	
-	// validar o user
-	const user= userDb.find(u => u.email === email && u.pass == pass);
-	// erro 401-> unAuthorized
-	if(!user)
-		return res.status(401).json({erro: 'Dados invalidos!'});
-	// gerar o token (JWT), com o id, nome do user e a valida(1 hora)
-	//sign(dados, assinatura, validade)
-	const token = jwt.sign({userId: user.id, nome: user.nome}, secretToken,{expiresIn: '1h'});
-	res.json({token});
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      secretToken,
+      { expiresIn: '1h' }
+    );
+
+    console.log("Login bem-sucedido");
+    res.json({ token });
+  } catch (error) {
+    console.error("Erro no login:", error);
+    res.status(500).json({ erro: 'Erro interno no servidor' });
+  }
 });
 
-app.listen(4000, ()=>{
-	console.log("Servidor na porta 4000");
-})
-
-
-
-
-
-
+app.listen(4000, () => {
+  console.log("Servidor de login a correr na porta 4000");
+});
