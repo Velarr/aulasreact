@@ -18,7 +18,7 @@ app.post('/login', async (req, res) => {
     const user = await findAdminByEmailAndPass(email, pass);
 
     if (!user) {
-      console.log("Usuário ou senha inválida");
+      console.log("Utilizador ou pass inválida");
       return res.status(401).json({ erro: 'Dados inválidos!' });
     }
 
